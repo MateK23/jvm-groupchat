@@ -1,5 +1,7 @@
 package com.matek.groupchat.client;
 
+import com.matek.groupchat.server.Server;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -8,10 +10,6 @@ import java.util.Scanner;
 public class Client {
     int port = 9011;
 
-    public static void main(String[] args) {
-
-    }
-
     public Client(int port){
         this.port = port;
         Socket socket; // კლიენტი
@@ -19,10 +17,16 @@ public class Client {
         ObjectInputStream objectInputStream = null;
         boolean isStart = true;
 
+
+
         try {
             // კლიენტის შექმნა და კავშირის დამყარება
             socket = new Socket("localhost", port);
             System.out.println("Connecting...");
+
+            ClientRunnable clientRunnable = new ClientRunnable(socket);
+            Thread clientListenThread = new Thread(clientRunnable);
+            clientListenThread.start();
 
             while (isStart) {
                 // შეტყობინების გაგზავნა
@@ -31,7 +35,6 @@ public class Client {
                 Scanner scan = new Scanner(System.in);
                 String msg = scan.next();
                 objectOutputStream.writeObject(msg);
-                // System.out.println("Message Sent");
                 objectInputStream = new ObjectInputStream(socket.getInputStream());
 
                 String str = (String) objectInputStream.readObject();
